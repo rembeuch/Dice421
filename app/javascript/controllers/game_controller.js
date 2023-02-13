@@ -7,7 +7,8 @@ export default class extends Controller {
   connect() {
   }
 
-  addLap() {
+  addLap(event) {
+    let gameId = event.target.dataset.id
     let lap = document.getElementById("lap")
     let maxlap = document.getElementById("maxlap")
     let btnLap = document.getElementById("btnLap")
@@ -47,6 +48,7 @@ export default class extends Controller {
         return a - b;
       }).join("");
       btnLap.classList.add('d-none')
+
       fetch(`/results?score=${sortResult}`
         , {
           method: 'GET',
@@ -55,7 +57,9 @@ export default class extends Controller {
         .then(data => {
         })
       setTimeout(function () {
-        btnLap.classList.remove('d-none');
+        if (parseInt(lap.innerHTML) < 3) {
+          btnLap.classList.remove('d-none');
+        }
         result.innerHTML = `résultat: ${document.getElementById('die-1').dataset.roll}.${document.getElementById('die-2').dataset.roll}.${document.getElementById('die-3').dataset.roll}`
       }, 2000);
     }

@@ -4,7 +4,7 @@ Rails.application.routes.draw do
   resources :games
   post "leave", to: "games#leave" , as: 'leave'
   post "join", to: "games#join" , as: 'join'
-  post "lap", to: "games#lap" , as: 'lap'
+  get "lap", to: "games#lap" , as: 'lap'
   get 'results', to: 'games#results', as: 'results'
   post "reset", to: "games#reset" , as: 'reset'
 

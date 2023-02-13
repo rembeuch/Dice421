@@ -1,6 +1,6 @@
-    <div>
-<%= link_to 'Accueil',  root_path , class: 'btn btn-primary m-3'%>
-<%= button_to "Reset", reset_path(id: @game.id), method: :post, class:"btn btn-danger" %>
+    <div class="d-flex">
+        <%= button_to 'Accueil',  root_path , method: :get, class: 'btn btn-primary mx-2'%>
+        <%= button_to "Reset", reset_path(id: @game.id), method: :post, class:"btn btn-danger mx-2" %>
         identifiant de la partie: <%= @game.id %>
         Titre de la partie: <%= @game.title %>
         <br>
@@ -14,23 +14,31 @@
                 joueur <%= index + 1 %>: <%= player.pseudo %>
             <% end %>
             score: <%= player.score %>
+            <% if  @player.points > 0%>
+              points: <%= player.points %>
+            <% end %>
                 <br>
         <% end %>
     </div>
 <div class="container d-flex justify-content-around" data-controller="game">
     <div>
         <% if @game.current_player < @players.size %>
-          <h2>C'est à <%=  @players[@game.current_player].pseudo %> de jouer 
+          <h3>C'est à <%=  @players[@game.current_player].pseudo %> de jouer 
               <%= @players[@game.current_player].pseudo == @player.pseudo ? "(Vous)" : "" %>
-          </h2>
+          </h3>
+        <% elsif @players.where(points: @minimum).count == 1 %>
+         <h1> <%= @players.where(points: @minimum).first.pseudo %> prend <%= @players.where(points: @minimum).first.score == 122 ? (@maximum + 1) : @maximum %>! </h1>
+        <% elsif @players.where(points: @minimum).count > 1 && @players.where(loser: true).count == 1 %>
+          <h1> <%= @players.where(loser: true).first.pseudo %> prend <%= @players.where(loser: true).first.score == 122 ? (@maximum + 1) : @maximum %>! </h1>
         <% end %>
         <p> nombre de coup: <span id="lap"> <%= @game.lap %> </span> 
             <span id='result'></span>
         </p>
             <p>nombre de coups max:<span id="maxlap"> <%= @game.lap_max %> </span></p>
         <% if @player == @players[@game.current_player] %>
+        <div class="d-flex justify-content-around">
           <div data-action="click->game#addLap">
-              <%= button_to "Jouer!", lap_path(id: @game.id), method: :post, class:"btn btn-success", id:"btnLap"%>
+              <button  class="btn btn-success" id="btnLap" data-id="<%= @game.id %>"> Jouer!</button>
           </div>
             <% if @game.lap > 0 %>
               <div data-action="click->game#turn">
@@ -40,8 +48,20 @@
               <div data-action="click->game#turn">
                 <%= button_to "Terminer", turn_path(id: @game.id), method: :post, class:"btn btn-warning d-none", id:"btnTurn" %>
               </div>
+        </div>
         <% end %>
         <br>
+        <div class="m-4 d-flex d-none" id="locker">
+        <ol class="die-list mx-5" data-controller='games'>
+            <button class="btn-primary" data-action="click->game#toggleLock" data-lock="1" id="lock1">🔒</button>
+        </ol>
+        <ol class="die-list mx-5" data-controller='games'>
+            <button class="btn-primary" data-action="click->game#toggleLock" data-lock="2" id="lock1">🔒</button>
+        </ol>
+         <ol class="die-list mx-5" data-controller='games'>
+            <button class="btn-primary" data-action="click->game#toggleLock" data-lock="3" id="lock1">🔒</button>
+        </ol>
+        </div>
         <div class="dice d-flex">
       <ol class="die-list even-roll unlock" data-roll="1" id="die-1">
         <li class="die-item" data-side="1">
@@ -152,15 +172,5 @@
       </ol>
     </div>
     <br>
-    <div class="m-4 d-flex d-none" id="locker">
-        <ol class="die-list mx-5" data-controller='games'>
-            <button class="btn-primary" data-action="click->game#toggleLock" data-lock="1" id="lock1">🔒</button>
-        </ol>
-        <ol class="die-list mx-5" data-controller='games'>
-            <button class="btn-primary" data-action="click->game#toggleLock" data-lock="2" id="lock1">🔒</button>
-        </ol>
-         <ol class="die-list mx-5" data-controller='games'>
-            <button class="btn-primary" data-action="click->game#toggleLock" data-lock="3" id="lock1">🔒</button>
-        </ol>
-    </div>
+    
 </div>
