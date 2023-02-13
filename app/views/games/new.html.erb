@@ -1,0 +1,64 @@
+<div class="container d-flex justify-content-around mt-3">
+<div>
+    <h1>Créer une partie</h1>
+    <%= form_with(model: @game, local: true) do |form| %>
+    Votre Pseudo:
+    <% if Player.find_by(user: current_user).nil? %>
+        <%= form.text_field :pseudo %>
+    <% else %>
+        <%= form.text_field :pseudo , value: @player.pseudo%>
+    <% end %>
+    <br>
+    <br>
+    Ajouter un titre:
+    <%= form.text_field :title, required: true %>
+    <br>
+    <%= form.submit value: "C'est Parti!", class: "btn btn-primary my-3" %>
+    <% end %>
+</div>
+<div>
+        <h1>Rejoindre une partie</h1>
+    <% if @player %>
+            <% if @player.in_game == true %>
+                <%= link_to 'Partie en cours' , game_path(@player.game) ,class: "btn btn-success my-3" %>
+                <%= button_to "Quitter la partie", leave_path, method: :post,class:"btn btn-danger", onclick: "return confirm('Etes-vous sûr de vouloir quitter la partie en cours ?');" %>
+            <% else %>
+                <%= form_with(model: @game, url: join_path(@game.id), method: :post) do |form| %>
+                    <div>
+                        Votre Pseudo:
+                        <%= form.text_field :pseudo, value: @player.pseudo %>
+                    </div>
+                    entrer l'id de la partie à rejoindre:
+                    <br>
+                    <%= form.number_field :game_id, value: @game.id %>
+                    <br>
+                    entrer le titre de la partie à rejoindre:
+                    <br>
+                    <%= form.text_field :title %>
+                    <br>
+                    <%= form.submit value: "Rejoindre!", class: "btn btn-primary my-3" %>
+                <% end %>
+            <% end %>
+    <% else %>
+        <%= form_with(model: @game, url: join_path(@game.id), method: :post) do |form| %>
+                    <div>
+                        Votre Pseudo:
+                        <%= form.text_field :pseudo, required: true %>
+                    </div>
+                    entrer l'id de la partie à rejoindre:
+                    <br>
+                    <%= form.number_field :game_id, value: @game.id %>
+                    <br>
+                    entrer le titre de la partie à rejoindre:
+                    <br>
+                    <%= form.text_field :title %>
+                    <br>
+                    <%= form.submit value: "Rejoindre!", class: "btn btn-primary my-3" %>
+                <% end %>
+    <% end %>
+</div>
+</div>
+
+<% flash.each do |type, message| %>
+  <div class="alert alert-<%= type %>"><%= message %></div>
+<% end %>

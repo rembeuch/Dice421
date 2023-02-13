@@ -1,0 +1,166 @@
+    <div>
+<%= link_to 'Accueil',  root_path , class: 'btn btn-primary m-3'%>
+<%= button_to "Reset", reset_path(id: @game.id), method: :post, class:"btn btn-danger" %>
+        identifiant de la partie: <%= @game.id %>
+        Titre de la partie: <%= @game.title %>
+        <br>
+        nombre de joueur:
+        <%= Player.where(game: @game).count %>
+        <br>
+        <% @players.each_with_index do |player, index| %>
+            <% if player.pseudo == @player.pseudo %>
+                joueur <%= index + 1%> (Vous): <%= player.pseudo %>
+            <% else %>
+                joueur <%= index + 1 %>: <%= player.pseudo %>
+            <% end %>
+            score: <%= player.score %>
+                <br>
+        <% end %>
+    </div>
+<div class="container d-flex justify-content-around" data-controller="game">
+    <div>
+        <% if @game.current_player < @players.size %>
+          <h2>C'est à <%=  @players[@game.current_player].pseudo %> de jouer 
+              <%= @players[@game.current_player].pseudo == @player.pseudo ? "(Vous)" : "" %>
+          </h2>
+        <% end %>
+        <p> nombre de coup: <span id="lap"> <%= @game.lap %> </span> 
+            <span id='result'></span>
+        </p>
+            <p>nombre de coups max:<span id="maxlap"> <%= @game.lap_max %> </span></p>
+        <% if @player == @players[@game.current_player] %>
+          <div data-action="click->game#addLap">
+              <%= button_to "Jouer!", lap_path(id: @game.id), method: :post, class:"btn btn-success", id:"btnLap"%>
+          </div>
+            <% if @game.lap > 0 %>
+              <div data-action="click->game#turn">
+                <%= button_to "Terminer", turn_path(id: @game.id), method: :post, class:"btn btn-warning", id:"btnTurn" %>
+              </div>
+            <% end %>
+              <div data-action="click->game#turn">
+                <%= button_to "Terminer", turn_path(id: @game.id), method: :post, class:"btn btn-warning d-none", id:"btnTurn" %>
+              </div>
+        <% end %>
+        <br>
+        <div class="dice d-flex">
+      <ol class="die-list even-roll unlock" data-roll="1" id="die-1">
+        <li class="die-item" data-side="1">
+          <span class="dot"></span>
+        </li>
+        <li class="die-item" data-side="2">
+          <span class="dot"></span>
+          <span class="dot"></span>
+        </li>
+        <li class="die-item" data-side="3">
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+        </li>
+        <li class="die-item" data-side="4">
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+        </li>
+        <li class="die-item" data-side="5">
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+        </li>
+        <li class="die-item" data-side="6">
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+        </li>
+      </ol>
+      <br>
+      <ol class="die-list odd-roll unlock" data-roll="1" id="die-2">
+        <li class="die-item" data-side="1">
+          <span class="dot"></span>
+        </li>
+        <li class="die-item" data-side="2">
+          <span class="dot"></span>
+          <span class="dot"></span>
+        </li>
+        <li class="die-item" data-side="3">
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+        </li>
+        <li class="die-item" data-side="4">
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+        </li>
+        <li class="die-item" data-side="5">
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+        </li>
+        <li class="die-item" data-side="6">
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+        </li>
+      </ol>
+      <br>
+      <ol class="die-list odd-roll unlock" data-roll="1" id="die-3">
+        <li class="die-item" data-side="1">
+          <span class="dot"></span>
+        </li>
+        <li class="die-item" data-side="2">
+          <span class="dot"></span>
+          <span class="dot"></span>
+        </li>
+        <li class="die-item" data-side="3">
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+        </li>
+        <li class="die-item" data-side="4">
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+        </li>
+        <li class="die-item" data-side="5">
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+        </li>
+        <li class="die-item" data-side="6">
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+          <span class="dot"></span>
+        </li>
+      </ol>
+    </div>
+    <br>
+    <div class="m-4 d-flex d-none" id="locker">
+        <ol class="die-list mx-5" data-controller='games'>
+            <button class="btn-primary" data-action="click->game#toggleLock" data-lock="1" id="lock1">🔒</button>
+        </ol>
+        <ol class="die-list mx-5" data-controller='games'>
+            <button class="btn-primary" data-action="click->game#toggleLock" data-lock="2" id="lock1">🔒</button>
+        </ol>
+         <ol class="die-list mx-5" data-controller='games'>
+            <button class="btn-primary" data-action="click->game#toggleLock" data-lock="3" id="lock1">🔒</button>
+        </ol>
+    </div>
+</div>
