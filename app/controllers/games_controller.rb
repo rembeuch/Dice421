@@ -1,6 +1,7 @@
 class GamesController < ApplicationController
     before_action :authenticate_user!
     before_action :set_player, only: [:new, :create, :show, :leave, :join, :lap, :results]
+    before_action :redirect_rampo, only: [:show]
     def new
         @game = Game.new
     end
@@ -17,7 +18,7 @@ class GamesController < ApplicationController
                     @player = Player.create!(pseudo: params[:game][:pseudo], user: current_user, game: @game)
                     @player.update(in_game: true)
                 else 
-                    @player.update(pseudo: params[:game][:pseudo], game: @game, in_game: true)
+                    @player.update(pseudo: params[:game][:pseudo], game: @game, in_game: true, score: 0, points: 0)
                 end
                 redirect_to game_path(@game)
             end
@@ -46,7 +47,10 @@ class GamesController < ApplicationController
             if @player.nil?
                 @player = Player.create!(pseudo: params[:game][:pseudo], user: current_user, game: @game)
                 @player.update(in_game: true)
-            else 
+            else
+                if params[:game][:game_id].to_i != @player.game.id
+                    @player.update(score: 0, points: 0)
+                end
                 @player.update(pseudo: params[:game][:pseudo], game: @game, in_game: true)
             end
             redirect_to game_path(@game)
@@ -91,7 +95,17 @@ class GamesController < ApplicationController
         @players.each do |player| 
             player.update(score: 0, points: 0, loser: false)
         end
-        redirect_to game_path(@game)
+        if @game.title.include?("rampo-")
+            id = @game.title.split("-").last.to_i
+            @players.each do |player|
+                player.update(game: Game.find(id))
+            end
+            @game.update(rampo: true)
+            Game.find(id).update(lap_max: 0, current_player: 0, lap: 0, rampo: false)
+            redirect_to game_path(id)
+        else
+            redirect_to game_path(@game)
+        end 
     end
 
     def finish
@@ -215,19 +229,42 @@ class GamesController < ApplicationController
             end
             return if @losers.where(loser: true).count == 1
         end
-        if  @losers.where(loser: true).count > 1
-            rampo
+        if  @losers.where(loser: true).count > 1 && @game.rampo == false
+           rampo
         end
     end
 
     def rampo
-        raise
+        @game.update(rampo: true)
+        @rampogame = Game.new
+        if @game.previous_points == 0
+            @rampogame.title = "rampo-#{@game.id}"
+        else
+            @rampogame.title = "bis#{@game.title}"
+        end
+        @rampogame.rampo = false
+        @rampogame.lap = 0
+        @rampogame.lap_max = 1
+        @rampogame.current_player = @losers.first.id - 1 
+        @rampogame.previous_points = @losers.first.points + @game.previous_points
+            if @rampogame.save
+                @losers.each do |loser|
+                    loser.update(game: @rampogame, score: 0, loser: false, points: 0)
+                end
+            end
     end
-      
 
+    
     private
-
+    
     def set_player
         @player = Player.find_by(user: current_user)
+    end
+
+    def redirect_rampo
+        @game = Game.find(params[:id])
+        if @game.rampo == true && @game != @player.game
+            redirect_to game_path(@player.game)
+        end
     end
 end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_02_13_221816) do
+ActiveRecord::Schema[7.0].define(version: 2023_03_06_212438) do
   create_table "games", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -18,6 +18,8 @@ ActiveRecord::Schema[7.0].define(version: 2023_02_13_221816) do
     t.integer "current_player", default: 0
     t.integer "lap", default: 0
     t.integer "lap_max", default: 0
+    t.boolean "rampo", default: false
+    t.integer "previous_points", default: 0
   end
 
   create_table "players", force: :cascade do |t|
