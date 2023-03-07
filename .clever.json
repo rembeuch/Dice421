@@ -1,9 +1,9 @@
 {
   "apps": [
     {
-      "app_id": "app_28437c7f-0091-484c-93f1-de46c34fa211",
+      "app_id": "app_1bd8c4c4-ee81-4500-ba17-c8c0cb83359b",
       "org_id": "user_5ddf9c9b-0668-4a95-a294-4f00772e6c2c",
-      "deploy_url": "https://github.com/rembeuch/Dice421.git",
+      "deploy_url": "https://push-n2-par-clevercloud-customers.services.clever-cloud.com/app_1bd8c4c4-ee81-4500-ba17-c8c0cb83359b.git",
       "name": "Dice421",
       "alias": "Dice421"
     }
