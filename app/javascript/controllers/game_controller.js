@@ -6,6 +6,13 @@ import { Controller } from "@hotwired/stimulus"
 export default class extends Controller {
   connect() {
   }
+  reset() {
+    let reset = document.getElementById("btnReset")
+    let wait = document.getElementById("wait")
+
+    reset.classList.add('d-none')
+    wait.classList.remove('d-none')
+  }
 
   addLap(event) {
     let gameId = event.target.dataset.id

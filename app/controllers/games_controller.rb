@@ -1,6 +1,6 @@
 class GamesController < ApplicationController
     before_action :authenticate_user!
-    before_action :set_player, only: [:new, :create, :show, :leave, :join, :lap, :results]
+    before_action :set_player, only: [:new, :create, :show, :leave, :join, :lap, :results, :reset, :rampo]
     before_action :redirect_rampo, only: [:show]
     def new
         @game = Game.new
@@ -18,7 +18,7 @@ class GamesController < ApplicationController
                     @player = Player.create!(pseudo: params[:game][:pseudo], user: current_user, game: @game)
                     @player.update(in_game: true)
                 else 
-                    @player.update(pseudo: params[:game][:pseudo], game: @game, in_game: true, score: 0, points: 0)
+                    @player.update(pseudo: params[:game][:pseudo], game: @game, in_game: true, score: 0, points: 0, position: 1)
                 end
                 redirect_to game_path(@game)
             end
@@ -27,16 +27,23 @@ class GamesController < ApplicationController
 
     def show
         @game = Game.find(params[:id])
-        @players = @game.players.where(in_game: true)
+        @players = @game.players.where(in_game: true).sort_by(&:position)
+        if @game.lap == 0 && @player.score > 0 && @players[@game.current_player] == @player
+            @game.update(lap: 3)
+        end
+        @unsort_players = @game.players.where(in_game: true)
         @minimum = @players.minimum(:points)
         @maximum = @players.maximum(:points)
-        if @minimum > 0 && @players.where(points: @minimum).count > 1
+        if @minimum > 0 && @unsort_players.where(points: @minimum).count > 1
             jugement
         end
     end
 
     def leave
         @game = @player.game
+        if @game.players.where(in_game: true).sort_by(&:position)[@game.current_player] == @player
+            @game.update(lap: 0)
+        end
         @player.update(in_game: false)
         redirect_to root_path
     end
@@ -51,7 +58,7 @@ class GamesController < ApplicationController
                 if params[:game][:game_id].to_i != @player.game.id
                     @player.update(score: 0, points: 0)
                 end
-                @player.update(pseudo: params[:game][:pseudo], game: @game, in_game: true)
+                @player.update(pseudo: params[:game][:pseudo], game: @game, in_game: true, position: (@game.players.where(in_game: true).maximum(:position)+ 1))
             end
             redirect_to game_path(@game)
         else
@@ -64,6 +71,9 @@ class GamesController < ApplicationController
     
     def results
         @player.update(score: params[:score])
+        if @player.score == 122
+            @player.update(nenette: (@player.nenette += 1))
+        end
         @game = @player.game
         if @game.lap_max == 0
             if @game.lap < 3
@@ -89,22 +99,34 @@ class GamesController < ApplicationController
     end
 
     def reset
+        @player.update(reset: true)
         @game = Game.find(params[:id])
-        @game.update(lap: 0, lap_max: 0, current_player: 0)
-        @players = @game.players.where(in_game: true)
-        @players.each do |player| 
-            player.update(score: 0, points: 0, loser: false)
-        end
-        if @game.title.include?("rampo-")
-            id = @game.title.split("-").last.to_i
-            @players.each do |player|
-                player.update(game: Game.find(id))
+        if @game.players.where(in_game: true, reset: true).count > 1
+            @loser = Player.find_by(pseudo: params[:loser])
+            @loser.update(position: 0, score: 0, points: 0, loser: false, reset: false, nenette: 0)
+            @game.update(lap: 0, lap_max: 0, current_player: 0)
+            @players = @game.players.where(in_game: true)
+            i = 1
+            @players.each do |player| 
+                if player.id != @loser.id
+                    player.update(score: 0, points: 0, loser: false, position: i, reset: false, nenette: 0)
+                    i += 1
+                end
             end
-            @game.update(rampo: true)
-            Game.find(id).update(lap_max: 0, current_player: 0, lap: 0, rampo: false)
-            redirect_to game_path(id)
-        else
-            redirect_to game_path(@game)
+            if @game.title.include?("rampo-")
+                id = @game.title.split("-").last.to_i
+                Game.find(id).players.each do |player|
+                    player.update(score: 0, points: 0, loser: false, reset: false, position: 1, nenette: 0)
+                end
+                @players.each do |player|
+                    player.update(game: Game.find(id))
+                end
+                @game.update(rampo: true)
+                Game.find(id).update(lap_max: 0, current_player: 0, lap: 0, rampo: false)
+                redirect_to game_path(id)
+            else
+                redirect_to game_path(@game)
+            end
         end 
     end
 
@@ -152,11 +174,15 @@ class GamesController < ApplicationController
     end
       
     def jugement
-        @losers = @players.where(points: @minimum)
+        @losers = @unsort_players.where(points: @minimum)
         if @minimum == 1
+            @losers.each do |loser|
+                loser.update(score: loser.score.to_s.reverse.to_i)
+            end
             @losers.where(score: @losers.minimum(:score)).each do |player|
                 player.update(loser: true)
             end
+            return if @losers.where(loser: true).count == 1
         elsif @minimum == 2
             @losers.where(score: 123).each do |player|
                 player.update(loser: true)
@@ -245,11 +271,13 @@ class GamesController < ApplicationController
         @rampogame.rampo = false
         @rampogame.lap = 0
         @rampogame.lap_max = 1
-        @rampogame.current_player = @losers.first.id - 1 
-        @rampogame.previous_points = @losers.first.points + @game.previous_points
+        @rampogame.current_player = 0
+        @rampogame.previous_points = @players.maximum(:points) + @game.previous_points
             if @rampogame.save
-                @losers.each do |loser|
-                    loser.update(game: @rampogame, score: 0, loser: false, points: 0)
+                i = 0
+                @losers.where(loser: true).sort_by(&:position).reverse.each do |loser|
+                    loser.update(game: @rampogame, score: 0, loser: false, points: 0, position: i)
+                    i += 1
                 end
             end
     end

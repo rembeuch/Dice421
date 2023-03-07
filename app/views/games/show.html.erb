@@ -7,7 +7,7 @@
         <% end %>
         <br>
         nombre de joueur:
-        <%= Player.where(game: @game).count %>
+        <%= Player.where(game: @game, in_game: true).count %>
         <br>
         <% @players.each_with_index do |player, index| %>
             <% if player.pseudo == @player.pseudo %>
@@ -19,6 +19,9 @@
             <% if  @player.points > 0%>
               points: <%= player.points %>
             <% end %>
+            <% if  player.nenette > 0%>
+              nénette: <%= player.nenette %>
+            <% end %>
                 <br>
         <% end %>
     </div>
@@ -28,13 +31,20 @@
           <h3>C'est à <%=  @players[@game.current_player].pseudo %> de jouer 
               <%= @players[@game.current_player].pseudo == @player.pseudo ? "(Vous)" : "" %>
           </h3>
-        <% elsif @players.where(points: @minimum).count == 1 %>
-          <h1> <%= @players.where(points: @minimum).first.pseudo %> prend <%= @players.where(points: @minimum).first.score == 122 ? (@maximum + 1 + @game.previous_points) : @maximum + @game.previous_points%>! </h1>
-          <%= button_to "Reset", reset_path(id: @game.id), method: :post, class:"btn btn-danger mx-2" %>
-
-        <% elsif @players.where(points: @minimum).count > 1 && @players.where(loser: true).count == 1 %>
-          <h1> <%= @players.where(loser: true).first.pseudo %> prend <%= @players.where(loser: true).first.score == 122 ? (@maximum + 1+ @game.previous_points) : @maximum + @game.previous_points %>! </h1>
-          <%= button_to "Reset", reset_path(id: @game.id), method: :post, class:"btn btn-danger mx-2" %>
+        <% elsif @unsort_players.where(points: @minimum).count == 1 && @game.rampo == false %>
+          <h1> <%= @unsort_players.where(points: @minimum).first.pseudo %> prend <%= @maximum + @game.previous_points + @unsort_players.where(points: @minimum).first.nenette %> !  
+          </h1>
+          <div data-action="click->game#reset">
+            <%= button_to "Reset", reset_path(id: @game.id, loser: @unsort_players.where(points: @minimum).first.pseudo), method: :post, class:"btn btn-danger mx-2" , id:"btnReset"%>
+          </div>
+          <div id='wait' class="d-none">En attente des autres joueurs</div>
+        <% elsif @unsort_players.where(points: @minimum).count > 1 && @unsort_players.where(loser: true).count == 1 %>
+          <h1> <%= @unsort_players.where(loser: true).first.pseudo %> prend <%= @maximum + @game.previous_points + @unsort_players.where(loser: true).first.nenette %> !  
+          </h1>
+          <div data-action="click->game#reset">
+            <%= button_to "Reset", reset_path(id: @game.id, loser: @unsort_players.where(points: @minimum).first.pseudo), method: :post, class:"btn btn-danger mx-2", id:"btnReset" %>
+          </div>
+            <div id='wait' class="d-none">En attente des autres joueurs</div>
         <% end %>
         <p> nombre de coup: <span id="lap"> <%= @game.lap %> </span> 
             <span id='result'></span>
