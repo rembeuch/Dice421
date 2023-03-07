@@ -1,0 +1,11 @@
+{
+  "apps": [
+    {
+      "app_id": "app_28437c7f-0091-484c-93f1-de46c34fa211",
+      "org_id": "user_5ddf9c9b-0668-4a95-a294-4f00772e6c2c",
+      "deploy_url": "https://github.com/rembeuch/Dice421.git",
+      "name": "Dice421",
+      "alias": "Dice421"
+    }
+  ]
+}
