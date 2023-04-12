@@ -179,8 +179,10 @@ class GamesController < ApplicationController
             @losers.each do |loser|
                 loser.update(score: loser.score.to_s.reverse.to_i)
             end
-            @losers.where(score: @losers.minimum(:score)).each do |player|
-                player.update(loser: true)
+            @losers.sort_by(&:score).each do |player|
+                if player.score == @losers.sort_by(&:score).first.score
+                    player.update(loser: true)
+                end
             end
             return if @losers.where(loser: true).count == 1
         elsif @minimum == 2
