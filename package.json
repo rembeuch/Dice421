@@ -6,6 +6,7 @@
     "@rails/ujs": "^6.1.7",
     "@rails/webpacker": "5.4.3",
     "bootstrap": "^4.4.1",
+    "css": "^3.0.0",
     "jquery": "^3.4.1",
     "popper.js": "^1.16.0",
     "stimulus": "^3.2.1",
@@ -13,5 +14,8 @@
     "tar": "^6.1.11",
     "webpack": "^4.46.0",
     "yarn": "^1.22.4"
+  },
+  "scripts": {
+    "build:css": "sass app/assets/stylesheets/application.css"
   }
 }
