@@ -9,6 +9,7 @@ gem 'bootstrap', '~> 5.1.3'
 gem 'actionpack', '~> 7.0.4.2'
 # The original asset pipeline for Rails [https://github.com/rails/sprockets-rails]
 gem "sprockets-rails"
+gem 'rake', '13.0.6'
 
 # Use sqlite3 as the database for Active Record
 gem "sqlite3", "~> 1.4"
